@@ -9,12 +9,15 @@ public class CarController : MonoBehaviour
     public float driftFactor = 0.95f;
     public float accelerationFactor = 30.0f;
     public float turnFactor = 3.5f;
+    public float maxSpeed = 20;
 
     //Local variables
     float accelerationInput = 0;
     float steeringInput = 0;
 
     float rotationAngle = 0;
+
+    float velocityVsUp = 0;
 
     //Components
     Rigidbody2D carRigidBody2D;
@@ -39,9 +42,29 @@ public class CarController : MonoBehaviour
     void ApplyEngineForce()
     {
 
+        //Calculate how forward we are going in terms of the direction of our velocity
+
+        velocityVsUp = Vector2.Dot(transform.up, carRigidBody2D.velocity);
+
+        //Limit so that we cannot go anymore forward than the limit set
+
+        if (velocityVsUp > maxSpeed && accelerationInput > 0)
+            return; //Don't apply anymore force
+
+        //Limit so that we cannot fo faster than the 50% of the max speed in the reverse direction
+
+        if (velocityVsUp < -maxSpeed * 0.5f && accelerationInput < 0)
+            return; //Don't apply anymore force
+
+
+        //Limit so that we cannot fo faster while accelerating
+
+        if (carRigidBody2D.velocity.sqrMagnitude > maxSpeed * maxSpeed && accelerationInput > 0)
+            return; //Don't apply anymore force
+
         //Apply drag if there is not accelerationInput so the car stops when the player let's go of the key
 
-        if(accelerationInput == 0)
+        if (accelerationInput == 0)
         {
             carRigidBody2D.drag = Mathf.Lerp(carRigidBody2D.drag, 3.0f, Time.fixedDeltaTime * 3);
         } else 
