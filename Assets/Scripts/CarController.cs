@@ -102,10 +102,39 @@ public class CarController : MonoBehaviour
         carRigidBody2D.velocity = forwardVelocity + rightVelocity * driftFactor;
     }
 
+    float getLateralVelocity()
+    {
+        //Returns how fast the car is moving sideways
+        return Vector2.Dot(transform.right, carRigidBody2D.velocity);
+    }
+
     public void setInputVector(Vector2 inputVector)
     {
         steeringInput = inputVector.x;
         accelerationInput = inputVector.y;
 
     }
+
+    public bool isDrifting(out float lateralVelocity, out bool isBraking)
+    {
+        lateralVelocity = getLateralVelocity();
+        isBraking = false;
+
+        //Check if we are moving forward and the player is hitting the brakes. In this case they are drifting
+        if(accelerationInput <0 && velocityVsUp > 0)
+        {
+            isBraking = true;
+            return true;
+        }
+
+
+        //If we have a lot of side movement then we are drifting as well
+        if(Mathf.Abs(getLateralVelocity()) > 4.0f)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }
